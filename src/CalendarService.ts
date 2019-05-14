@@ -2,6 +2,7 @@ import {
     GoogleEventApi,
     IBatchEventResponse,
     ICalendarEvent,
+    IDeleteRequest,
     IFetchEventResponse,
     IGetInRangeRequestParams,
     IGetRequestParams,
@@ -100,10 +101,26 @@ class CalendarService {
 
     /**
      * Delete events on Google Calendar in batch.
-     * @param eventIds an ids of events that will be deleted.
+     * @param requests  an array which contain information of calendar id and event id that should be deleted.
      */
-    public deleteEvents(ids: string[]): Promise<IBatchEventResponse> {
-        return this.whenApiReady().then(() => this.eventApi.deleteEvents(this.gapi, ids));
+    public deleteEvents(requests: IDeleteRequest[]): Promise<IBatchEventResponse> {
+        return this.whenApiReady().then(() => this.eventApi.deleteEvents(this.gapi, requests));
+    }
+
+    /**
+     * Bulk requests to insert/update/delete in one go
+     * @param insertCandidates  candidate of events that should be inserted
+     * @param updateCandidates  candidate of events that should be updated
+     * @param deleteCandidates  candidate of events that should be deleted
+     */
+    public eventBulkRequests(
+        insertCandidates: ICalendarEvent[],
+        updateCandidates: ICalendarEvent[],
+        deleteCandidates: IDeleteRequest[],
+    ): Promise<IBatchEventResponse> {
+        return this.whenApiReady().then(() =>
+            this.eventApi.eventBulkRequests(this.gapi, insertCandidates, updateCandidates, deleteCandidates),
+        );
     }
 
     /**

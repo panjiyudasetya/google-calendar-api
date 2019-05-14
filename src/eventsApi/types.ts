@@ -107,6 +107,11 @@ export interface IBatchEventResponse extends IBaseApiResponse {
     };
 }
 
+export interface IDeleteRequest {
+    calendarId: string; // Calendar ID. Use "primary" to retrieve events from your primary calendar.
+    eventId: string; // ID of the event.
+}
+
 export interface IGetRequestParams {
     calendarId: string; // Calendar ID. Use "primary" to retrieve events from your primary calendar.
     eventId: string; // ID of the event.
@@ -118,5 +123,5 @@ export interface IGetInRangeRequestParams {
     startDate: Date; // Start of date request.
     endDate: Date; // End of date request.
     orderBy: OrderType; // Order event according to available type. {@see OrderType}.
-    showDeleted: boolean; // Set to True when you need to show deleted events. False otherwise.
+    showDeleted?: boolean; // Set to True when you need to show deleted events. False otherwise.
 }

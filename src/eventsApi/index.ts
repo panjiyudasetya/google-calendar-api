@@ -8,6 +8,7 @@ export {
     ICalReminder,
     ICalTime,
     ICalendarEvent,
+    IDeleteRequest,
     IEventResource,
     IEventResponse,
     IExtendedProperties,

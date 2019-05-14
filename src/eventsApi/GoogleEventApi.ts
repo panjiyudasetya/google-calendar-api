@@ -1,6 +1,7 @@
 import {
     IBatchEventResponse,
     ICalendarEvent,
+    IDeleteRequest,
     IFetchEventResponse,
     IGetInRangeRequestParams,
     IGetRequestParams,
@@ -35,9 +36,22 @@ interface IGoogleEventApi {
     /**
      * Delete events on Google Calendar in batch.
      * @param gapi      Google API.
-     * @param eventIds  an ids of events that will be deleted.
+     * @param requests  an array which contain information of calendar id and event id that should be deleted.
      */
-    deleteEvents(gapi: any, ids: string[]): Promise<IBatchEventResponse>;
+    deleteEvents(gapi: any, requests: IDeleteRequest[]): Promise<IBatchEventResponse>;
+    /**
+     * Bulk requests to insert/update/delete in one go
+     * @param gapi              Google API.
+     * @param insertCandidates  candidate of events that should be inserted
+     * @param updateCandidates  candidate of events that should be updated
+     * @param deleteCandidates  candidate of events that should be deleted
+     */
+    eventBulkRequests(
+        gapi: any,
+        insertCandidates: ICalendarEvent[],
+        updateCandidates: ICalendarEvent[],
+        deleteCandidates: IDeleteRequest[],
+    ): Promise<IBatchEventResponse>;
 }
 
 class GoogleEventApi implements IGoogleEventApi {
@@ -111,15 +125,55 @@ class GoogleEventApi implements IGoogleEventApi {
     }
 
     /** @inheritdoc */
-    deleteEvents(gapi: any, ids: string[]): Promise<IBatchEventResponse> {
+    deleteEvents(gapi: any, requests: IDeleteRequest[]): Promise<IBatchEventResponse> {
         return new Promise((resolve, reject) => {
             const batch = gapi.client.newBatch();
-            ids.forEach(id => {
+            requests.forEach(req => {
                 const request = gapi.client.calendar.events.delete({
-                    calendarId: 'primary',
-                    eventId: id,
+                    calendarId: req.calendarId,
+                    eventId: req.eventId,
+                });
+                batch.add(request, { id: req.eventId });
+            });
+            batch.then((response: IBatchEventResponse) => resolve(response), (reason: any) => reject(reason));
+        });
+    }
+
+    /** @inheritdoc */
+    eventBulkRequests(
+        gapi: any,
+        insertCandidates: ICalendarEvent[],
+        updateCandidates: ICalendarEvent[],
+        deleteCandidates: IDeleteRequest[],
+    ): Promise<IBatchEventResponse> {
+        return new Promise((resolve, reject) => {
+            const batch = gapi.client.newBatch();
+            insertCandidates.forEach(event => {
+                const id = event.resource.id ? event.resource.id : event.resource.extendedProperties.private.externalID;
+                const request = gapi.client.calendar.events.insert({
+                    calendarId: event.calendarId,
+                    resource: event.resource,
                 });
                 batch.add(request, { id });
+            });
+            updateCandidates.forEach(event => {
+                if (event.resource.id) {
+                    const request = gapi.client.calendar.events.update({
+                        calendarId: event.calendarId,
+                        eventId: event.resource.id,
+                        resource: event.resource,
+                    });
+                    batch.add(request, { id: event.resource.id });
+                } else {
+                    reject(new Error(`Event ID must be provided!\n${JSON.stringify(event)}`));
+                }
+            });
+            deleteCandidates.forEach(req => {
+                const request = gapi.client.calendar.events.delete({
+                    calendarId: req.calendarId,
+                    eventId: req.eventId,
+                });
+                batch.add(request, { id: req.eventId });
             });
             batch.then((response: IBatchEventResponse) => resolve(response), (reason: any) => reject(reason));
         });

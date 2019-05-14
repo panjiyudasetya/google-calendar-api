@@ -8,10 +8,13 @@ export {
     ICalReminder,
     ICalTime,
     ICalendarEvent,
+    IDeleteRequest,
     IEventResource,
     IEventResponse,
     IExtendedProperties,
     IFetchEventResponse,
+    IGetInRangeRequestParams,
+    IGetRequestParams,
 } from './eventsApi/types';
 
 export { AuthenticationChangeListener, Config } from './types';
