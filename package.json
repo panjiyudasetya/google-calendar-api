@@ -1,5 +1,5 @@
 {
-    "name": "calendar-api",
+    "name": "google-calendar-api",
     "version": "0.0.1",
     "description": "Google calendar api that can be used on both React and React Native project",
     "private": true,
