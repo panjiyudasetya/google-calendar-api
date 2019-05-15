@@ -2,13 +2,19 @@
     "name": "google-calendar-api",
     "version": "0.0.1",
     "description": "Google calendar api that can be used on both React and React Native project",
-    "private": true,
+    "main": "dist/index",
+    "typings": "dist/index",
+    "files": [
+        "dist"
+    ],
     "scripts": {
+        "postinstall": "tsc --sourceMap -p . || true",
         "build": "tsc",
         "lint": "tsc -p . --noEmit;tslint -p .",
         "tslint": "tslint \"src/**/*.{ts}\"",
         "tslint-check": "tslint-config-prettier-check ./tslint.json"
     },
+    "private": true,
     "dependencies": {
         "typescript": "^2.4.2"
     },
